@@ -1,9 +1,11 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
+#include <random>
 
 #include "core/GridProblem.h"
 #include "algorithms/BestFirstSearch.h"
+#include "algorithms/HillClimbing.h"
 #include "heuristics/ManhattanDistance.h"
 
 using namespace std;
@@ -35,8 +37,43 @@ int main() {
         return g + 3 * h;
     });
 
+    auto strategyDeterministic = [](const shared_ptr<Node<State>>& current, const vector<shared_ptr<Node<State>>>& neighbors) {
+        for (auto& neighbor : neighbors) {
+            if (neighbor->h < current->h) return neighbor;
+        }
+        return shared_ptr<Node<State>>(nullptr);
+    };
 
-    const auto solution = greedy.search();
+    auto strategySteepest = [](const shared_ptr<Node<State>>& current, const vector<shared_ptr<Node<State>>>& neighbors) {
+        shared_ptr<Node<State>> best = nullptr;
+        int minH = current->h;
+        for (auto& neighbor : neighbors) {
+            if (neighbor->h < minH) {
+                minH = neighbor->h;
+                best = neighbor;
+            }
+        }
+        return best;
+    };
+
+    random_device rd;
+    mt19937 gen(rd());
+
+    auto strategyStochastic = [&gen](const shared_ptr<Node<State>>& current, const vector<shared_ptr<Node<State>>>& neighbors) {
+        vector<shared_ptr<Node<State>>> betters;
+        for (auto& n : neighbors) {
+            if (n->h < current->h) betters.push_back(n);
+        }
+
+        if (betters.empty()) return shared_ptr<Node<State>>(nullptr);
+
+        uniform_int_distribution<size_t> distrib(0, betters.size() - 1);
+        return betters[distrib(gen)];
+    };
+
+    HillClimbing hcDeterministics(problem, &heuristic, strategyDeterministic);
+
+    const auto solution = hcDeterministics.search();
 
     if (solution == nullptr) {
         cout << "Nenhum caminho encontrado.\n";
@@ -45,8 +82,8 @@ int main() {
 
     cout << "Caminho encontrado!\n";
     cout << "Custo total: " << solution->g << "\n";
-    cout << "Nos visitados: " << greedy.getVisitedNodes() << "\n";
-    cout << "Nos gerados: " << greedy.getGeneratedNodes() << "\n\n";
+    cout << "Nos visitados: " << hcDeterministics.getVisitedNodes() << "\n";
+    cout << "Nos gerados: " << hcDeterministics.getGeneratedNodes() << "\n\n";
 
     vector<State> path;
 
