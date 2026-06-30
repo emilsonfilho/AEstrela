@@ -6,6 +6,7 @@
 #include <memory>
 #include <climits>
 #include <queue>
+#include <functional>
 
 #include "Heuristic.h"
 #include "core/GridProblem.h"
@@ -20,11 +21,12 @@ private:
     const Heuristic<State>* heuristic;
     int generatedNodes;
     int visitedNodes;
+    function<int(int, int)> evaluationFunction;
 
     vector<vector<int>> reachedCosts;
 public:
-    BestFirstSearch(GridProblem  problem, const Heuristic<State>* heuristic)
-        : problem(std::move(problem)), heuristic(heuristic), generatedNodes(0), visitedNodes(0) {
+    BestFirstSearch(GridProblem  problem, const Heuristic<State>* heuristic, function<int(int, int)> f)
+        : problem(std::move(problem)), heuristic(heuristic), generatedNodes(0), visitedNodes(0), evaluationFunction(std::move(f)) {
         reachedCosts = vector<vector<int>>(15, vector<int>(15, INT_MAX));
     }
 

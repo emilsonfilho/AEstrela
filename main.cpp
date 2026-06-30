@@ -17,15 +17,26 @@ int main() {
     map[1][2] = OBSTACLE;
     map[1][3] = OBSTACLE;
 
-    State start(0, 0);
-    State goal(4, 4);
+    const State start(0, 0);
+    const State goal(4, 4);
 
-    GridProblem problem(map, start, goal);
-    ManhattanDistance heuristic;
+    const GridProblem problem(map, start, goal);
+    const ManhattanDistance heuristic;
 
-    BestFirstSearch search(problem, &heuristic);
+    BestFirstSearch aStar(problem, &heuristic, [](const int g, const int h) {
+        return g + h;
+    });
 
-    auto solution = search.search();
+    BestFirstSearch greedy(problem, &heuristic, [](const int g, const int h) {
+        return h;
+    });
+
+    BestFirstSearch aStarH3(problem, &heuristic, [](const int g, const int h) {
+        return g + 3 * h;
+    });
+
+
+    const auto solution = greedy.search();
 
     if (solution == nullptr) {
         cout << "Nenhum caminho encontrado.\n";
@@ -34,8 +45,8 @@ int main() {
 
     cout << "Caminho encontrado!\n";
     cout << "Custo total: " << solution->g << "\n";
-    cout << "Nos visitados: " << search.getVisitedNodes() << "\n";
-    cout << "Nos gerados: " << search.getGeneratedNodes() << "\n\n";
+    cout << "Nos visitados: " << greedy.getVisitedNodes() << "\n";
+    cout << "Nos gerados: " << greedy.getGeneratedNodes() << "\n\n";
 
     vector<State> path;
 

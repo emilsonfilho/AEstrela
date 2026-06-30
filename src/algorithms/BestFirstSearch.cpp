@@ -6,12 +6,11 @@ shared_ptr<Node<State>> BestFirstSearch::search() {
     reachedCosts = vector<vector<int>>(15, vector<int>(15, INT_MAX));
 
     State initialState = problem.getInitialState();
-    auto node = make_shared<Node<State>>(
-        initialState,
-        nullptr,
-        0,
-        heuristic->calculate(initialState, problem.getObjectiveState())
-    );
+
+    int h = heuristic->calculate(initialState, problem.getObjectiveState());
+    int f = evaluationFunction(0, h);
+
+    auto node = make_shared<Node<State>>(initialState, nullptr, 0, h, f);
 
     reachedCosts[initialState.x][initialState.y] = 0;
 
@@ -45,14 +44,9 @@ vector<shared_ptr<Node<State>>> BestFirstSearch::expand(const shared_ptr<Node<St
 
     for (auto neighbor : problem.getValidActions(s)) {
         int cost = node->g + problem.getCost(neighbor);
-        validActions.push_back(
-            make_shared<Node<State>>(
-                neighbor,
-                node,
-                cost,
-                heuristic->calculate(neighbor, problem.getObjectiveState())
-            )
-        );
+        int h = heuristic->calculate(neighbor, problem.getObjectiveState());
+        int f = evaluationFunction(cost, h);
+        validActions.push_back(make_shared<Node<State>>(neighbor, node, cost, h, f));
     }
 
     return validActions;

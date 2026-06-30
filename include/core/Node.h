@@ -12,12 +12,13 @@ struct Node {
 
     int g; // Custo acumulado
     int h; // Heurística
+    int f; // Função de avaliação
 
-    Node(StateType state, shared_ptr<Node<StateType>> parent, int g, int h)
-        : state(state), parent(parent), g(g), h(h) {}
+    Node(StateType state, shared_ptr<Node<StateType>> parent, const int g, const int h, const int f)
+        : state(state), parent(parent), g(g), h(h), f(f) {}
 
     int getF() const {
-        return g + h;
+        return f;
     }
 };
 
