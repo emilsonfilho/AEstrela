@@ -1,8 +1,12 @@
 #include "algorithms/HillClimbing.h"
 
+HillClimbing::HillClimbing(GridProblem problem, const Heuristic<State> *heuristic, HCStrategy strategy)
+    : InformedSearchAlgorithm(std::move(problem), heuristic), strategy(std::move(strategy)) {}
+
 shared_ptr<Node<State>> HillClimbing::search() {
     generatedNodes = 0;
     visitedNodes = 0;
+    explored = vector<vector<bool>>(GRID_SIZE, vector<bool>(GRID_SIZE, false));
 
     State current = problem.getInitialState();
     int h = heuristic->calculate(current, problem.getObjectiveState());
@@ -11,6 +15,7 @@ shared_ptr<Node<State>> HillClimbing::search() {
 
     while (true) {
         visitedNodes++;
+        explored[node->state.x][node->state.y] = true;
 
         if (problem.isGoal(node->state))
             return node;
@@ -39,12 +44,4 @@ vector<shared_ptr<Node<State>>> HillClimbing::expand(const shared_ptr<Node<State
     }
 
     return neighbors;
-}
-
-int HillClimbing::getVisitedNodes() const {
-    return visitedNodes;
-}
-
-int HillClimbing::getGeneratedNodes() const {
-    return generatedNodes;
 }

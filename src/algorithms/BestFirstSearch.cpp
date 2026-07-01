@@ -1,9 +1,15 @@
 #include "algorithms/BestFirstSearch.h"
 
+BestFirstSearch::BestFirstSearch(GridProblem problem, const Heuristic<State> *heuristic, function<int(int, int)> f)
+    : InformedSearchAlgorithm(std::move(problem), heuristic),
+      evaluationFunction(std::move(f)),
+      reachedCosts(GRID_SIZE, vector<int>(GRID_SIZE, INT_MAX)) {}
+
 shared_ptr<Node<State>> BestFirstSearch::search() {
     generatedNodes = 0;
     visitedNodes = 0;
-    reachedCosts = vector<vector<int>>(15, vector<int>(15, INT_MAX));
+    reachedCosts = vector<vector<int>>(GRID_SIZE, vector<int>(GRID_SIZE, INT_MAX));
+    explored = vector<vector<bool>>(GRID_SIZE, vector<bool>(GRID_SIZE, false));
 
     State initialState = problem.getInitialState();
 
@@ -21,6 +27,7 @@ shared_ptr<Node<State>> BestFirstSearch::search() {
         node = frontier.top();
         frontier.pop();
         visitedNodes++;
+        explored[node->state.x][node->state.y] = true;
 
         if (problem.isGoal(node->state))
             return node;
@@ -50,12 +57,4 @@ vector<shared_ptr<Node<State>>> BestFirstSearch::expand(const shared_ptr<Node<St
     }
 
     return validActions;
-}
-
-int BestFirstSearch::getGeneratedNodes() const {
-    return generatedNodes;
-}
-
-int BestFirstSearch::getVisitedNodes() const {
-    return visitedNodes;
 }

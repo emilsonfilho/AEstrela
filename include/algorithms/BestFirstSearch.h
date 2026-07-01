@@ -9,32 +9,21 @@
 #include <functional>
 
 #include "Heuristic.h"
+#include "InformedSearchAlgorithm.h"
 #include "core/GridProblem.h"
-#include "core/State.h"
 #include "core/Node.h"
 
 using namespace std;
 
-class BestFirstSearch {
+class BestFirstSearch : public InformedSearchAlgorithm {
 private:
-    GridProblem problem;
-    const Heuristic<State>* heuristic;
-    int generatedNodes;
-    int visitedNodes;
     function<int(int, int)> evaluationFunction;
-
     vector<vector<int>> reachedCosts;
 public:
-    BestFirstSearch(GridProblem  problem, const Heuristic<State>* heuristic, function<int(int, int)> f)
-        : problem(std::move(problem)), heuristic(heuristic), generatedNodes(0), visitedNodes(0), evaluationFunction(std::move(f)) {
-        reachedCosts = vector<vector<int>>(15, vector<int>(15, INT_MAX));
-    }
+    BestFirstSearch(GridProblem  problem, const Heuristic<State>* heuristic, function<int(int, int)> f);
 
-    shared_ptr<Node<State>> search();
+    shared_ptr<Node<State>> search() override;
     vector<shared_ptr<Node<State>>> expand(const shared_ptr<Node<State>> &node) const;
-
-    int getGeneratedNodes() const;
-    int getVisitedNodes() const;
-};
+    };
 
 #endif //AESTRELA_BESTFIRSTSEARCH_H

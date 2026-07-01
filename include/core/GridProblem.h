@@ -3,11 +3,9 @@
 
 #include <vector>
 
+#include "configs/Constants.h"
 #include "core/Problem.h"
 #include "core/State.h"
-
-#define N 15
-#define OBSTACLE (-1)
 
 using namespace std;
 

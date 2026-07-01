@@ -1,26 +1,55 @@
 #include <iostream>
 #include <vector>
-#include <algorithm>
 #include <random>
 
 #include "core/GridProblem.h"
 #include "algorithms/BestFirstSearch.h"
 #include "algorithms/HillClimbing.h"
 #include "heuristics/ManhattanDistance.h"
+#include "utils/Map.h"
+#include "utils/PathBuilder.h"
+
+#ifdef _WIN32
+#include <windows.h>
+void enableAnsiColors() {
+    SetConsoleOutputCP(CP_UTF8);
+
+    const HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    SetConsoleMode(hOut, dwMode);
+}
+#endif
 
 using namespace std;
 
+void runAndPrint(const string& name, SearchAlgorithm& algorithm,
+                  const vector<vector<int>>& map, const State& start, const State& goal) {
+    cout << "\n=== " << name << " ===\n";
+
+    const auto solution = algorithm.search();
+
+    if (solution == nullptr) {
+        cout << "Nenhum caminho encontrado.\n";
+        return;
+    }
+
+    cout << "Custo total: " << solution->g << "\n";
+    cout << "Nos visitados: " << algorithm.getVisitedNodes() << "\n";
+    cout << "Nos gerados: " << algorithm.getGeneratedNodes() << "\n";
+
+    const vector<State> path = buildPath(solution);
+    Map::printMap(map, start, goal, path, algorithm.getExplored());
+}
+
 int main() {
-    vector<vector<int>> map(15, vector<int>(15, 1));
-
-    // Alguns obstáculos
-    map[1][0] = OBSTACLE;
-    map[1][1] = OBSTACLE;
-    map[1][2] = OBSTACLE;
-    map[1][3] = OBSTACLE;
-
+#ifdef _WIN32
+    enableAnsiColors();
+#endif
     const State start(0, 0);
-    const State goal(4, 4);
+    const State goal(14, 14);
+    vector<vector<int>> map = Map::generateValidMap(0.30, start, goal);
 
     const GridProblem problem(map, start, goal);
     const ManhattanDistance heuristic;
@@ -71,33 +100,16 @@ int main() {
         return betters[distrib(gen)];
     };
 
-    HillClimbing hcDeterministics(problem, &heuristic, strategyDeterministic);
+    HillClimbing hcDeterministic(problem, &heuristic, strategyDeterministic);
+    HillClimbing hcSteepest(problem, &heuristic, strategySteepest);
+    HillClimbing hcStochastic(problem, &heuristic, strategyStochastic);
 
-    const auto solution = hcDeterministics.search();
-
-    if (solution == nullptr) {
-        cout << "Nenhum caminho encontrado.\n";
-        return 0;
-    }
-
-    cout << "Caminho encontrado!\n";
-    cout << "Custo total: " << solution->g << "\n";
-    cout << "Nos visitados: " << hcDeterministics.getVisitedNodes() << "\n";
-    cout << "Nos gerados: " << hcDeterministics.getGeneratedNodes() << "\n\n";
-
-    vector<State> path;
-
-    for (auto current = solution; current != nullptr; current = current->parent) {
-        path.push_back(current->state);
-    }
-
-    reverse(path.begin(), path.end());
-
-    cout << "Caminho:\n";
-
-    for (const State& s : path) {
-        cout << "(" << s.x << ", " << s.y << ")\n";
-    }
+    runAndPrint("A*", aStar, map, start, goal);
+    runAndPrint("Greedy Best-First", greedy, map, start, goal);
+    runAndPrint("A* (h x3)", aStarH3, map, start, goal);
+    runAndPrint("Hill Climbing Deterministico", hcDeterministic, map, start, goal);
+    runAndPrint("Hill Climbing Steepest", hcSteepest, map, start, goal);
+    runAndPrint("Hill Climbing Estocastico", hcStochastic, map, start, goal);
 
     return 0;
 }

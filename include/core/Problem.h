@@ -3,8 +3,7 @@
 
 #include <vector>
 
-#define N 15
-#define OBSTACLE (-1)
+#include "configs/Constants.h"
 
 using namespace std;
 

@@ -22,10 +22,10 @@ vector<State> GridProblem::getValidActions(const State& state) const {
     int y = state.y;
 
     // North
-    if (y + 1 < N and map[x][y + 1] != OBSTACLE)
+    if (y + 1 < GRID_SIZE and map[x][y + 1] != OBSTACLE)
         validActions.emplace_back(x, y + 1);
     // East
-    if (x + 1 < N and map[x + 1][y] != OBSTACLE)
+    if (x + 1 < GRID_SIZE and map[x + 1][y] != OBSTACLE)
         validActions.emplace_back(x + 1, y);
     // South
     if (y - 1 >= 0 and map[x][y - 1] != OBSTACLE)
